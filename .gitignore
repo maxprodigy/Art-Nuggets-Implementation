@@ -1,0 +1,90 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+eggs/
+parts/
+sdist/
+var/
+*.egg-info/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# macOS
+.DS_Store
+
+# Editor settings
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Pytest
+.pytest_cache/
+
+# MyPy / type checkers
+.mypy_cache/
+
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Logs
+*.log
+logs/
+
+# Local environment variables / secrets
+.env
+.env.*
+*.env
+
+# SSL / keys
+*.pem
+*.key
+*.crt
+
+# Databases
+*.sqlite3
+*.db
+
+# Static / media (build artifacts)
+staticfiles/
+media/
+
+# FastAPI / Uvicorn / Gunicorn
+uvicorn.log
+gunicorn.log
+gunicorn.error.log
+*.pid
+
+# One-off / tooling
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Backup and temp files
+*~
+*.swp
+*.swo
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Profiling
+.prof
