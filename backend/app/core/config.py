@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
 
     # Security
-    # JWT_SECRET: str
-    # JWT_ALGORITHM: str
+    JWT_SECRET: str
+    JWT_ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS

@@ -22,5 +22,11 @@ async def get_session() -> AsyncSession: # type: ignore
         bind=async_engine, class_=AsyncSession, expire_on_commit=False
     )
 
+    # async with Session() as session:
+    #     yield session
+
     async with Session() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.close()
