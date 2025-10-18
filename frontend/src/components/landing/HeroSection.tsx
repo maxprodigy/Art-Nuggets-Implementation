@@ -2,51 +2,14 @@
 
 import React from "react";
 import { GradientBackground } from "@/components/ui/gradient-background";
-import { GradientButton } from "@/components/ui/gradient-button";
-import { Logo } from "@/components/ui/logo";
 import { Button } from "../ui/button";
+import { Navbar } from "@/components/ui/navbar";
 
 export function HeroSection() {
   return (
     <GradientBackground variant="hero" className="h-[120vh] flex flex-col">
       {/* Header/Navigation */}
-      <header className="w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Logo />
-            </div>
-
-            {/* Navigation and CTA Button */}
-            <div className="flex items-center space-x-8">
-              <nav className="hidden md:flex items-center space-x-8">
-                <a
-                  href="#home"
-                  className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
-                >
-                  Home
-                </a>
-                <a
-                  href="#about"
-                  className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
-                >
-                  About
-                </a>
-                <a
-                  href="#blog"
-                  className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
-                >
-                  Blog
-                </a>
-              </nav>
-              <GradientButton size="sm" className="px-6 py-2">
-                Sign Up
-              </GradientButton>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero Content */}
       <div className="flex-1 flex items-center justify-center">
