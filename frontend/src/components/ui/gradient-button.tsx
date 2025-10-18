@@ -28,10 +28,19 @@ const GradientButton = React.forwardRef<HTMLButtonElement, GradientButtonProps>(
 
     const variantClasses = {
       default:
-        "bg-gradient-to-r from-black from-10% via-yellow-500  via-orange-500 via-pink-500 via-purple-500 to-blue-400 text-white font-semibold hover:shadow-lg hover:scale-105 transform",
+        "relative overflow-hidden text-white font-semibold hover:shadow-lg hover:scale-105 transform",
       outline:
-        "border-2 border-transparent bg-gradient-to-r from-yellow-600 via-orange-500 via-pink-500 via-purple-500 to-blue-400 bg-clip-border text-white font-semibold hover:shadow-lg hover:scale-105 transform",
+        "relative overflow-hidden border-2 border-transparent text-white font-semibold hover:shadow-lg hover:scale-105 transform",
       ghost: "text-gray-700 hover:bg-gray-100",
+    };
+
+    const getGradientBackground = () => {
+      if (variant === "default") {
+        return "bg-gradient-to-r from-black from-10% via-yellow-500 via-orange-500 via-pink-500 via-purple-500 to-blue-400";
+      } else if (variant === "outline") {
+        return "bg-gradient-to-r from-yellow-600 via-orange-500 via-pink-500 via-purple-500 to-blue-400";
+      }
+      return "";
     };
 
     return (
@@ -45,7 +54,17 @@ const GradientButton = React.forwardRef<HTMLButtonElement, GradientButtonProps>(
         ref={ref}
         {...props}
       >
-        {children}
+        {/* Blurred gradient background */}
+        {variant !== "ghost" && (
+          <div
+            className={cn(
+              "absolute inset-0 blur-[2px] z-0",
+              getGradientBackground()
+            )}
+          />
+        )}
+        {/* Text content */}
+        <span className="relative z-10">{children}</span>
       </button>
     );
   }
