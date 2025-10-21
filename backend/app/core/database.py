@@ -6,7 +6,14 @@ from sqlalchemy.orm import sessionmaker
 
 
 async_engine = AsyncEngine(
-    create_engine(url=Config.DATABASE_URL, echo=True),
+    create_engine(
+        url=Config.DATABASE_URL,
+        echo=True,
+        connect_args={
+            "prepared_statement_cache_size": 0,  # Disable prepared statements
+            "statement_cache_size": 0,
+        },
+    ),
 )
 
 

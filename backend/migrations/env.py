@@ -8,7 +8,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from sqlmodel import SQLModel
 from app.core.config import settings as Config
-from app.models.user import User  # Import your models here
+from app.models.user import User
+from app.models.industry import Industry
+from app.models.niche import Niche
+from app.models.user_niche import UserNiche
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
