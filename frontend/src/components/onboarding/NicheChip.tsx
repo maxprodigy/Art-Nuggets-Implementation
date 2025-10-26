@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Niche } from "@/lib/onboarding-data";
+import { Niche } from "@/types/onboarding";
 
 interface NicheChipProps {
   niche: Niche;
@@ -38,4 +38,3 @@ export function NicheChip({
     </button>
   );
 }
-

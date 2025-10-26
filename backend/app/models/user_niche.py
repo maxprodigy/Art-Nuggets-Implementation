@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.niche import Niche
 
+
 class UserNiche(SQLModel, table=True):
     __tablename__ = "user_niches"
 
@@ -23,10 +24,14 @@ class UserNiche(SQLModel, table=True):
         )
     )
     user_id: uuid.UUID = Field(
-        sa_column=Column(pg.UUID, ForeignKey("users.id"), nullable=False)
+        sa_column=Column(
+            pg.UUID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+        )
     )
     niche_id: uuid.UUID = Field(
-        sa_column=Column(pg.UUID, ForeignKey("niches.id"), nullable=False)
+        sa_column=Column(
+            pg.UUID, ForeignKey("niches.id", ondelete="CASCADE"), nullable=False
+        )
     )
     created_at: datetime = Field(
         sa_column=Column(pg.TIMESTAMP, nullable=False, default=datetime.now)

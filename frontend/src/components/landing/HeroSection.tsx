@@ -4,8 +4,16 @@ import React from "react";
 import { GradientBackground } from "@/components/ui/gradient-background";
 import { Button } from "../ui/button";
 import { Navbar } from "@/components/ui/navbar";
+import { useAuthButton } from "@/hooks/useAuthButton";
+import { useRouter } from "next/navigation";
 
 export function HeroSection() {
+  const router = useRouter();
+  const authButton = useAuthButton({
+    authenticatedText: "Go to Courses",
+    authenticatedAction: () => router.push("/courses"),
+  });
+
   return (
     <GradientBackground variant="hero" className="h-[120vh] flex flex-col">
       {/* Header/Navigation */}
@@ -30,11 +38,12 @@ export function HeroSection() {
 
           {/* CTA Button */}
           <div className="flex justify-center">
-            {/* <GradientButton size="lg" className="px-8 py-4 text-lg rounded-4xl">
-              Sign Up
-            </GradientButton> */}
-            <Button size="lg" className="px-6 py-4 text-lg rounded-4xl">
-              Sign Up
+            <Button
+              size="lg"
+              className="px-6 py-4 text-lg rounded-4xl"
+              onClick={authButton.action}
+            >
+              {authButton.text}
             </Button>
           </div>
         </div>

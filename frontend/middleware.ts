@@ -1,60 +1,42 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getCookie } from "@/lib/auth/cookies";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Get token from localStorage (we'll need to handle this differently in production)
-  // For now, we'll check if the user is authenticated on the client side
-  // In a real app, you'd use HTTP-only cookies or server-side session checking
+  // Skip API routes and static files
+  if (
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/favicon")
+  ) {
+    return NextResponse.next();
+  }
 
-  // Define route patterns
-  const publicRoutes = [
-    "/",
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/reset-password",
-  ];
-  const protectedRoutes = ["/dashboard", "/profile", "/settings"];
-  const adminRoutes = ["/admin"];
+  // Public routes that don't need authentication
+  const publicRoutes = ["/", "/login", "/signup"];
+  const isPublicRoute = publicRoutes.includes(pathname);
 
-  // Check if current route is public
-  const isPublicRoute = publicRoutes.some((route) => pathname === route);
+  // Protected routes that need authentication
+  const protectedRoutes = ["/dashboard", "/profile", "/onboarding", "/courses"];
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
-  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
 
-  // For API routes, let them handle their own authentication
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
-  }
+  // Check if user has tokens (backend will validate them)
+  const accessToken = getCookie(request, "access_token");
+  const refreshToken = getCookie(request, "refresh_token");
+  const hasTokens = !!(accessToken && refreshToken);
 
-  // For static files, let them through
-  if (pathname.startsWith("/_next/") || pathname.startsWith("/favicon")) {
-    return NextResponse.next();
-  }
-
-  // Handle protected routes
-  if (isProtectedRoute || isAdminRoute) {
-    // In a real implementation, you'd check for a valid token here
-    // For now, we'll let the client-side handle authentication
-    // and redirect if needed
-    // You could decode JWT here to check roles for admin routes
-    // const token = request.cookies.get('access_token');
-    // if (token && isAdminRoute) {
-    //   const payload = decodeJWT(token.value);
-    //   if (payload.role !== 'admin') {
-    //     return NextResponse.redirect(new URL('/unauthorized', request.url));
-    //   }
-    // }
-  }
-
-  // Redirect to login if accessing protected route without auth
-  // This is a basic implementation - in production you'd check actual tokens
-  if (isProtectedRoute && !request.cookies.get("access_token")) {
+  // Redirect to login if accessing protected route without tokens
+  if (isProtectedRoute && !hasTokens) {
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Redirect authenticated users away from login/signup
+  if (hasTokens && (pathname === "/login" || pathname === "/signup")) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();

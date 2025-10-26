@@ -4,68 +4,70 @@ import type { User, AuthResponse } from "@/types";
 
 interface AuthState {
   user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
+  completedOnboarding: boolean;
+  _hasHydrated: boolean; // Track hydration status
   login: (authData: AuthResponse) => void;
   logout: () => void;
-  setLoading: (loading: boolean) => void;
-  updateUser: (user: Partial<User>) => void;
+  setOnboardingCompleted: (completed: boolean) => void;
+  updateTokens: (accessToken: string, refreshToken: string) => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
+      accessToken: null,
+      refreshToken: null,
       isAuthenticated: false,
-      isLoading: false,
+      completedOnboarding: false,
+      _hasHydrated: false,
 
       login: (authData: AuthResponse) => {
-        // Store tokens in localStorage
-        if (typeof window !== "undefined") {
-          localStorage.setItem("access_token", authData.access_token);
-          localStorage.setItem("refresh_token", authData.refresh_token);
-        }
-
         set({
-          user: authData.user,
+          user: authData.user as unknown as User,
+          accessToken: authData.access_token,
+          refreshToken: authData.refresh_token,
           isAuthenticated: true,
-          isLoading: false,
         });
       },
 
       logout: () => {
-        // Clear tokens from localStorage
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
-        }
-
         set({
           user: null,
+          accessToken: null,
+          refreshToken: null,
           isAuthenticated: false,
-          isLoading: false,
         });
       },
 
-      setLoading: (loading: boolean) => {
-        set({ isLoading: loading });
+      setOnboardingCompleted: (completed: boolean) => {
+        set({
+          completedOnboarding: completed,
+        });
       },
 
-      updateUser: (userData: Partial<User>) => {
-        const currentUser = get().user;
-        if (currentUser) {
-          set({
-            user: { ...currentUser, ...userData },
-          });
-        }
+      updateTokens: (accessToken: string, refreshToken: string) => {
+        set({
+          accessToken,
+          refreshToken,
+        });
+      },
+
+      setHasHydrated: (hasHydrated: boolean) => {
+        set({
+          _hasHydrated: hasHydrated,
+        });
       },
     }),
     {
       name: "auth-storage",
-      partialize: (state) => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

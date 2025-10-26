@@ -4,6 +4,8 @@ from datetime import datetime
 
 
 class UserCreateModel(BaseModel):
+    first_name: str = Field(max_length=50)
+    last_name: str = Field(max_length=50)
     artist_name: str = Field(max_length=20)
     email: str = Field(max_length=40)
     role: str = Field(default="regular")
@@ -12,6 +14,8 @@ class UserCreateModel(BaseModel):
 
 class UserModel(BaseModel):
     id: uuid.UUID
+    first_name: str
+    last_name: str
     artist_name: str
     email: str
     role: str

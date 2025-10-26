@@ -1,34 +1,55 @@
-// User types
+// User types - aligned with backend UserModel
 export interface User {
-  id: string;
+  id: string; // UUID from backend
   email: string;
-  username: string;
+  role: string;
+  artist_name: string;
   first_name?: string;
   last_name?: string;
-  is_active: boolean;
+  industry_id?: string; // Industry ID
+  is_verified: boolean;
   created_at: string;
   updated_at: string;
+  // Profile data (resolved from relationships)
+  profile?: {
+    industry?: {
+      id: string;
+      name: string;
+      description: string;
+    };
+    niches?: Array<{
+      id: string;
+      name: string;
+      industry_id: string;
+    }>;
+  };
 }
 
-// Auth types
+// Auth types - aligned with backend schemas
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
 export interface RegisterRequest {
+  first_name: string;
+  last_name: string;
+  artist_name: string;
   email: string;
-  username: string;
   password: string;
-  first_name?: string;
-  last_name?: string;
+  // role is handled by backend (defaults to "regular")
 }
 
 export interface AuthResponse {
+  message: string;
   access_token: string;
   refresh_token: string;
-  token_type: string;
-  user: User;
+  user: {
+    email: string;
+    uid: string; // Backend returns user ID as uid
+    role: string;
+    artist_name: string;
+  };
 }
 
 // API Response types
@@ -59,4 +80,26 @@ export interface PaginatedResponse<T> {
   page: number;
   size: number;
   pages: number;
+}
+
+// Helper types for user profile
+export interface UserProfile {
+  industry: string; // Industry ID
+  niches: string[]; // Array of niche IDs
+}
+
+// Extended user with resolved industry/niche data
+export interface UserWithProfile extends Omit<User, "profile"> {
+  profile: UserProfile & {
+    industryData?: {
+      id: string;
+      name: string;
+      description: string;
+    };
+    nichesData?: Array<{
+      id: string;
+      name: string;
+      industryId: string;
+    }>;
+  };
 }

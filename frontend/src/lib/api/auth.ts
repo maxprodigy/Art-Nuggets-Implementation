@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { apiClient, backendClient } from "./client";
 import type {
   LoginRequest,
   RegisterRequest,
@@ -6,29 +6,27 @@ import type {
   User,
 } from "@/types";
 
-// Auth API endpoints
+// Auth API endpoints - using Next.js API routes for comprehensive handling
 export const authApi = {
-  // Login user
-  login: (credentials: LoginRequest): Promise<AuthResponse> =>
-    apiClient.post("/auth/login", credentials).then((res) => res.data),
+  // Login user - uses Next.js API route
+  login: (credentials: LoginRequest): Promise<any> =>
+    apiClient.post("/api/auth/login", credentials).then((res) => res.data),
 
-  // Register user
-  register: (userData: RegisterRequest): Promise<AuthResponse> =>
-    apiClient.post("/auth/register", userData).then((res) => res.data),
+  // Register user - uses Next.js API route
+  register: (userData: RegisterRequest): Promise<any> =>
+    apiClient.post("/api/auth/signup", userData).then((res) => res.data),
 
-  // Refresh token
-  refreshToken: (refreshToken: string): Promise<AuthResponse> =>
-    apiClient
-      .post("/auth/refresh", { refresh_token: refreshToken })
-      .then((res) => res.data),
+  // Refresh token (direct backend call - no cookies needed)
+  refreshToken: (): Promise<{ access_token: string }> =>
+    backendClient.get("/auth/refresh").then((res) => res.data),
 
-  // Logout user
-  logout: (): Promise<void> =>
-    apiClient.post("/auth/logout").then((res) => res.data),
+  // Logout user - uses Next.js API route
+  logout: (): Promise<any> =>
+    apiClient.get("/api/auth/logout").then((res) => res.data),
 
-  // Get current user profile
+  // Get current user profile (direct backend call)
   getProfile: (): Promise<User> =>
-    apiClient.get("/auth/me").then((res) => res.data),
+    backendClient.get("/user-profile/me").then((res) => res.data),
 
   // Update user profile
   updateProfile: (userData: Partial<User>): Promise<User> =>

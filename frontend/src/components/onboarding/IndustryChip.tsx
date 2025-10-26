@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Industry } from "@/lib/onboarding-data";
+import { Industry } from "@/types/onboarding";
 import { Check } from "lucide-react";
 
 interface IndustryChipProps {
@@ -18,8 +18,6 @@ export function IndustryChip({
   onClick,
   className,
 }: IndustryChipProps) {
-  const IconComponent = industry.icon;
-
   return (
     <button
       onClick={onClick}
@@ -33,7 +31,6 @@ export function IndustryChip({
           : "border-gray-300 bg-white text-gray-700 hover:border-orange-300 hover:bg-orange-50"
       )}
     >
-      <IconComponent className="w-4 h-4" />
       <span>{industry.name}</span>
       {isSelected && <Check className="w-4 h-4" />}
     </button>

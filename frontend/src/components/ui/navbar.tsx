@@ -3,6 +3,7 @@
 import React from "react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Logo } from "@/components/ui/logo";
+import { useNavbarAuth } from "@/hooks/useNavbarAuth";
 
 interface NavbarProps {
   variant?: "default" | "courses";
@@ -10,6 +11,8 @@ interface NavbarProps {
 }
 
 export function Navbar({ variant = "default", className = "" }: NavbarProps) {
+  const authButton = useNavbarAuth();
+
   return (
     <header className={`w-full ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,8 +56,14 @@ export function Navbar({ variant = "default", className = "" }: NavbarProps) {
                 Blog
               </a>
             </nav>
-            <GradientButton size="sm" className="px-6 py-2">
-              Sign Up
+
+            {/* Dynamic Auth Button */}
+            <GradientButton
+              size="sm"
+              className="px-6 py-2"
+              onClick={authButton.action}
+            >
+              {authButton.text}
             </GradientButton>
           </div>
         </div>

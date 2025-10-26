@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useStep } from "@/hooks/use-step";
 import { Progress } from "@/components/ui/progress";
 import { IndustrySelectionStep } from "@/components/onboarding/IndustrySelectionStep";
@@ -8,14 +9,18 @@ import { NicheSelectionStep } from "@/components/onboarding/NicheSelectionStep";
 import { ReviewStep } from "@/components/onboarding/ReviewStep";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/lib/stores/auth";
 import {
-  industries,
-  getNichesByIndustry,
-  Industry,
-  Niche,
-} from "@/lib/onboarding-data";
+  useIndustries,
+  useNichesByIndustry,
+  useSubmitOnboarding,
+} from "@/hooks/useOnboarding";
+import type { Industry, Niche } from "@/types/onboarding";
 
 export default function OnboardingPage() {
+  const router = useRouter();
+  const { setOnboardingCompleted, isAuthenticated } = useAuthStore();
+
   const [
     currentStep,
     { goToNextStep, goToPrevStep, canGoToNextStep, canGoToPrevStep },
@@ -25,6 +30,27 @@ export default function OnboardingPage() {
     null
   );
   const [selectedNiches, setSelectedNiches] = useState<Niche[]>([]);
+
+  // React Query hooks
+  const {
+    data: industriesData,
+    isLoading: isLoadingIndustries,
+    error: industriesError,
+    refetch: refetchIndustries,
+  } = useIndustries();
+
+  const {
+    data: nichesData,
+    isLoading: isLoadingNiches,
+    error: nichesError,
+    refetch: refetchNiches,
+  } = useNichesByIndustry(selectedIndustry?.id || null);
+
+  const {
+    mutate: submitOnboarding,
+    isPending: isSubmitting,
+    error: submitError,
+  } = useSubmitOnboarding();
 
   const handleIndustrySelect = (industry: Industry) => {
     setSelectedIndustry(industry);
@@ -56,10 +82,31 @@ export default function OnboardingPage() {
   };
 
   const handleComplete = () => {
-    // TODO: Submit to backend
-    console.log("Selected Industry:", selectedIndustry);
-    console.log("Selected Niches:", selectedNiches);
-    // Redirect to dashboard or next page
+    if (!selectedIndustry || selectedNiches.length === 0) return;
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      console.error("User is not authenticated. Redirecting to login.");
+      router.push("/auth/login");
+      return;
+    }
+
+    console.log("User is authenticated, proceeding with submission...");
+
+    submitOnboarding(
+      {
+        industry_id: selectedIndustry.id,
+        niche_ids: selectedNiches.map((niche) => niche.id),
+      },
+      {
+        onSuccess: () => {
+          // Mark onboarding as completed
+          setOnboardingCompleted(true);
+          // Redirect to courses page
+          router.push("/courses");
+        },
+      }
+    );
   };
 
   const isCurrentStepValid = () => {
@@ -78,8 +125,12 @@ export default function OnboardingPage() {
       case 1:
         return (
           <IndustrySelectionStep
+            industries={industriesData?.industries || []}
             selectedIndustry={selectedIndustry}
             onIndustrySelect={handleIndustrySelect}
+            isLoading={isLoadingIndustries}
+            error={industriesError?.message}
+            onRetry={() => refetchIndustries()}
           />
         );
 
@@ -87,8 +138,12 @@ export default function OnboardingPage() {
         return (
           <NicheSelectionStep
             selectedIndustry={selectedIndustry}
+            niches={nichesData?.niches || []}
             selectedNiches={selectedNiches}
             onNicheToggle={handleNicheToggle}
+            isLoading={isLoadingNiches}
+            error={nichesError?.message}
+            onRetry={() => refetchNiches()}
           />
         );
 
@@ -97,6 +152,8 @@ export default function OnboardingPage() {
           <ReviewStep
             selectedIndustry={selectedIndustry}
             selectedNiches={selectedNiches}
+            isSubmitting={isSubmitting}
+            submitError={submitError?.message}
           />
         );
 

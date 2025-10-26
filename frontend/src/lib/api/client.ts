@@ -1,97 +1,92 @@
 import axios from "axios";
 
-// Create axios instance with default config
+// Create axios instance for Next.js API routes
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+  baseURL: "", // Empty baseURL for Next.js API routes (relative URLs)
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true, // Automatically send httpOnly cookies with requests
+});
+
+// Create axios instance for direct backend calls
+export const backendClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor to add auth token
-apiClient.interceptors.request.use(
-  (config) => {
-    // Get token from localStorage or your preferred storage
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("access_token")
-        : null;
+// Create axios instance for public backend calls (no credentials needed)
+export const publicBackendClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1",
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: false, // No credentials for public endpoints
+});
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+// Add Authorization header to requests
+backendClient.interceptors.request.use((config) => {
+  // Get token from auth store
+  if (typeof window !== "undefined") {
+    try {
+      // Import auth store dynamically to avoid SSR issues
+      const { useAuthStore } = require("@/lib/stores/auth");
+      const { accessToken } = useAuthStore.getState();
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+    } catch (error) {
+      console.error("Error getting token from auth store:", error);
     }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
   }
-);
+  return config;
+});
 
-// Response interceptor to handle errors globally
-apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+// Handle token refresh on 401 errors
+backendClient.interceptors.response.use(
+  (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    if (error.response?.status === 401 && !error.config._retry) {
+      error.config._retry = true;
 
-    // Handle 401 errors (unauthorized - invalid/expired token)
-    if (error.response?.status === 401) {
-      // Check if this is already a retry attempt
-      if (!originalRequest._retry) {
-        originalRequest._retry = true;
+      try {
+        // Get refresh token from auth store
+        const { useAuthStore } = require("@/lib/stores/auth");
+        const { refreshToken } = useAuthStore.getState();
 
-        try {
-          // Try to refresh the token
-          const refreshToken =
-            typeof window !== "undefined"
-              ? localStorage.getItem("refresh_token")
-              : null;
+        if (refreshToken) {
+          // Try to refresh token
+          const response = await backendClient.post("/auth/refresh", {
+            refresh_token: refreshToken,
+          });
 
-          if (refreshToken) {
-            const response = await apiClient.post("/auth/refresh", {
-              refresh_token: refreshToken,
-            });
-
-            // Update tokens
-            if (typeof window !== "undefined") {
-              localStorage.setItem("access_token", response.data.access_token);
-              localStorage.setItem(
-                "refresh_token",
+          // Update tokens in store
+          if (typeof window !== "undefined") {
+            useAuthStore
+              .getState()
+              .updateTokens(
+                response.data.access_token,
                 response.data.refresh_token
               );
-            }
+          }
 
-            // Retry the original request with new token
-            originalRequest.headers.Authorization = `Bearer ${response.data.access_token}`;
-            return apiClient(originalRequest);
-          }
-        } catch (refreshError) {
-          // Refresh failed - clear tokens and redirect to login
-          if (typeof window !== "undefined") {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
-            // Redirect to login page
-            window.location.href = "/login";
-          }
+          // Retry original request
+          return backendClient(error.config);
         }
-      } else {
-        // Refresh also failed - clear tokens and redirect
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+        // Refresh failed - redirect to login
         if (typeof window !== "undefined") {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
-          window.location.href = "/login";
+          const { useAuthStore } = require("@/lib/stores/auth");
+          useAuthStore.getState().logout();
+          window.location.href = "/auth/login";
         }
       }
-    }
-
-    // Handle 403 errors (forbidden - insufficient permissions)
-    if (error.response?.status === 403) {
-      // Don't logout user - just show permission error
-      // This will be handled by the component making the request
-      console.warn("Access forbidden:", error.response.data?.message);
     }
 
     return Promise.reject(error);

@@ -62,17 +62,15 @@ class UserProfileService:
     async def validate_industry_exists(
         self, industry_id: uuid.UUID, session: AsyncSession
     ) -> Industry:
-        """Validate that industry exists and is active"""
-        statement = select(Industry).where(
-            Industry.id == industry_id, Industry.is_active == True
-        )
+        """Validate that industry exists"""
+        statement = select(Industry).where(Industry.id == industry_id)
         result = await session.exec(statement)
         industry = result.first()
 
         if not industry:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Industry not found or inactive",
+                detail="Industry not found",
             )
 
         return industry
@@ -80,23 +78,21 @@ class UserProfileService:
     async def validate_niches_exist(
         self, niche_ids: List[uuid.UUID], session: AsyncSession
     ) -> List[Niche]:
-        """Validate that all niches exist and are active"""
+        """Validate that all niches exist"""
         if not niche_ids:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="At least one niche must be provided",
             )
 
-        statement = select(Niche).where(
-            Niche.id.in_(niche_ids), Niche.is_active == True
-        )
+        statement = select(Niche).where(Niche.id.in_(niche_ids))
         result = await session.exec(statement)
         niches = result.all()
 
         if len(niches) != len(niche_ids):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="One or more niches not found or inactive",
+                detail="One or more niches not found",
             )
 
         return niches

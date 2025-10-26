@@ -65,6 +65,8 @@ class UserService:
                 "email": new_user.email,
                 "uid": str(new_user.id),
                 "role": new_user.role,
+                "first_name": new_user.first_name,
+                "last_name": new_user.last_name,
                 "artist_name": new_user.artist_name,
             },
         }
@@ -141,6 +143,8 @@ class UserService:
                 "email": user.email,
                 "uid": str(user.id),
                 "role": user.role,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
                 "artist_name": user.artist_name,
             },
         }

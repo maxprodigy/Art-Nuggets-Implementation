@@ -2,12 +2,20 @@
 
 import React from "react";
 import { BenefitCard } from "./BenefitCard";
+import { useAuthButton } from "@/hooks/useAuthButton";
+import { useRouter } from "next/navigation";
 
 interface BenefitsSectionProps {
   variant?: "first" | "second";
 }
 
 export function BenefitsSection({ variant = "first" }: BenefitsSectionProps) {
+  const router = useRouter();
+  const authButton = useAuthButton({
+    authenticatedText: "Go to Courses",
+    authenticatedAction: () => router.push("/courses"),
+  });
+
   if (variant === "second") {
     return (
       <section className="py-16 bg-white">
@@ -42,8 +50,11 @@ export function BenefitsSection({ variant = "first" }: BenefitsSectionProps) {
 
           {/* CTA Button */}
           <div className="text-center">
-            <button className="bg-black text-white px-8 py-3 rounded-4xl font-medium hover:bg-gray-800 transition-colors">
-              Sign Up
+            <button
+              className="bg-black text-white px-8 py-3 rounded-4xl font-medium hover:bg-gray-800 transition-colors"
+              onClick={authButton.action}
+            >
+              {authButton.text}
             </button>
           </div>
         </div>

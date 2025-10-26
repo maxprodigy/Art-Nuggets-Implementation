@@ -4,8 +4,16 @@ import React from "react";
 import { GradientBackground } from "@/components/ui/gradient-background";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Logo } from "@/components/ui/logo";
+import { useAuthButton } from "@/hooks/useAuthButton";
+import { useRouter } from "next/navigation";
 
 export function Footer() {
+  const router = useRouter();
+  const authButton = useAuthButton({
+    authenticatedText: "Contract Review",
+    authenticatedAction: () => router.push("/aiChat"),
+  });
+
   return (
     <footer className="bg-black text-white py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,8 +87,9 @@ export function Footer() {
                 <GradientButton
                   size="lg"
                   className="bg-black text-white hover:bg-gray-800 px-8 py-3"
+                  onClick={authButton.action}
                 >
-                  Sign Up
+                  {authButton.text}
                 </GradientButton>
               </div>
             </GradientBackground>
