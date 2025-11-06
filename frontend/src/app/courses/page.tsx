@@ -1,25 +1,56 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { CourseSearchHero } from "@/components/courses/CourseSearchHero";
 import { NewInSection } from "@/components/courses/NewInSection";
-import { PopularSection } from "@/components/courses/PopularSection";
+import { CourseSearchResultsSection } from "@/components/courses/CourseSearchResultsSection";
 import { Footer } from "@/components/landing/Footer";
 
 export default function CoursesPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get("search") || ""
+  );
+  const [activeIndustryId, setActiveIndustryId] = useState<string | null>(
+    searchParams.get("industry") || null
+  );
+
+  // Update URL when search or industry changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) {
+      params.set("search", searchTerm);
+    }
+    if (activeIndustryId) {
+      params.set("industry", activeIndustryId);
+    }
+
+    const newUrl = params.toString()
+      ? `/courses?${params.toString()}`
+      : "/courses";
+
+    // Only update if URL actually changed
+    const currentUrl = searchParams.toString();
+    if (params.toString() !== currentUrl) {
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [searchTerm, activeIndustryId, router, searchParams]);
 
   return (
     <div className="min-h-screen">
       <CourseSearchHero
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
+        activeIndustryId={activeIndustryId}
+        setActiveIndustryId={setActiveIndustryId}
       />
-      <NewInSection searchTerm={searchTerm} activeCategory={activeCategory} />
-      <PopularSection searchTerm={searchTerm} activeCategory={activeCategory} />
+      <CourseSearchResultsSection
+        searchTerm={searchTerm}
+        industryId={activeIndustryId}
+      />
+      <NewInSection />
       <Footer />
     </div>
   );

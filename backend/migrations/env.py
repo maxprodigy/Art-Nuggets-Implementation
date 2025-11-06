@@ -12,6 +12,7 @@ from app.models.user import User
 from app.models.industry import Industry
 from app.models.niche import Niche
 from app.models.user_niche import UserNiche
+from app.models.chat import Chat, ChatMessage
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

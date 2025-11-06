@@ -5,10 +5,22 @@ import { useAuthStore } from "@/lib/stores/auth";
 import { ResponsiveChatSidebar } from "@/components/aiChat/ResponsiveChatSidebar";
 import { ChatHeader } from "@/components/aiChat/ChatHeader";
 import { AuthModal } from "@/components/aiChat/AuthModal";
+import { ChatInterface } from "@/components/aiChat/ChatInterface";
+import { ChatTabs } from "@/components/aiChat/ChatTabs";
+import { Chat } from "@/lib/api/aiChat";
+
+interface ChatTab {
+  id: string;
+  title: string;
+  chatId: string | null;
+}
 
 export default function AIChatPage() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [tabs, setTabs] = useState<ChatTab[]>([]);
+  const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Check authentication status after hydration
   useEffect(() => {
@@ -22,10 +34,112 @@ export default function AIChatPage() {
     // This function does nothing - modal cannot be closed
   };
 
+  const handleChatSelect = async (chatId: string | null) => {
+    // Check if chat is already open in a tab
+    const existingTab = tabs.find((tab) => tab.chatId === chatId);
+
+    if (existingTab) {
+      // Switch to existing tab
+      setActiveTabId(existingTab.id);
+    } else {
+      // Create new tab for this chat
+      let tabTitle = chatId ? "Chat" : "New Chat";
+
+      // If it's a saved chat, try to get the actual title
+      if (chatId) {
+        try {
+          const { aiChatApi } = await import("@/lib/api/aiChat");
+          const chat = await aiChatApi.getChat(chatId);
+          tabTitle = chat.title || "Chat";
+        } catch (err) {
+          console.error("Error loading chat title:", err);
+          // Use default title if fetch fails
+        }
+      }
+
+      const newTab: ChatTab = {
+        id: `tab-${Date.now()}`,
+        title: tabTitle,
+        chatId: chatId,
+      };
+      setTabs((prev) => [...prev, newTab]);
+      setActiveTabId(newTab.id);
+    }
+  };
+
+  const handleNewChat = () => {
+    // Create a new tab
+    const newTab: ChatTab = {
+      id: `tab-${Date.now()}`,
+      title: "New Chat",
+      chatId: null,
+    };
+    setTabs((prev) => [...prev, newTab]);
+    setActiveTabId(newTab.id);
+  };
+
+  const handleTabSelect = (tabId: string) => {
+    setActiveTabId(tabId);
+  };
+
+  const handleTabClose = (tabId: string) => {
+    const tabIndex = tabs.findIndex((tab) => tab.id === tabId);
+    const newTabs = tabs.filter((tab) => tab.id !== tabId);
+
+    // If closing active tab, switch to another
+    if (activeTabId === tabId) {
+      if (newTabs.length > 0) {
+        if (tabIndex > 0) {
+          setActiveTabId(newTabs[tabIndex - 1].id);
+        } else {
+          setActiveTabId(newTabs[0].id);
+        }
+      } else {
+        setActiveTabId(null);
+      }
+    }
+
+    setTabs(newTabs);
+  };
+
+  const handleChatSaved = async (chatId: string) => {
+    // Update the active tab with the chat ID and fetch the actual title
+    let chatTitle = "Chat";
+    try {
+      const { aiChatApi } = await import("@/lib/api/aiChat");
+      const chat = await aiChatApi.getChat(chatId);
+      chatTitle = chat.title || "Chat";
+    } catch (err) {
+      console.error("Error loading chat title:", err);
+    }
+
+    setTabs((prev) =>
+      prev.map((tab) =>
+        tab.id === activeTabId
+          ? { ...tab, chatId: chatId, title: chatTitle }
+          : tab
+      )
+    );
+    // Trigger sidebar refresh
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleNewTab = () => {
+    handleNewChat();
+  };
+
+  const currentTab = tabs.find((tab) => tab.id === activeTabId);
+  const currentChatId = currentTab?.chatId || null;
+
   return (
     <div className="min-h-screen flex">
       {/* Responsive Sidebar */}
-      <ResponsiveChatSidebar />
+      <ResponsiveChatSidebar
+        activeChatId={currentChatId}
+        onChatSelect={handleChatSelect}
+        onNewChat={handleNewChat}
+        refreshTrigger={refreshTrigger}
+      />
 
       {/* Main Content Area */}
       <div
@@ -38,66 +152,24 @@ export default function AIChatPage() {
         {/* Header */}
         <ChatHeader />
 
-        {/* Chat Content Area */}
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="mb-8">
-              <div className="w-16 h-16 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg"></div>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Welcome to Art Nugs Chat
-              </h2>
-              <p className="text-gray-600 max-w-md">
-                Upload a document or start a conversation to get help with
-                contract review and analysis.
-              </p>
-            </div>
-
-            {/* Placeholder for future chat input */}
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-lg max-w-2xl mx-auto w-full">
-              <div className="flex items-center space-x-2 md:space-x-4">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    placeholder="Upload a document or ask about documents"
-                    className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    disabled
-                  />
-                </div>
-                <button className="p-2 md:p-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
-                  <svg
-                    className="w-4 h-4 md:w-5 md:h-5 text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                    />
-                  </svg>
-                </button>
-                <button className="p-2 md:p-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
-                  <svg
-                    className="w-4 h-4 md:w-5 md:h-5 text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
+        {/* Chat Tabs */}
+        {tabs.length > 0 && (
+          <div className="max-w-4xl w-full mx-auto">
+            <ChatTabs
+              tabs={tabs}
+              activeTabId={activeTabId!}
+              onTabSelect={handleTabSelect}
+              onTabClose={handleTabClose}
+            />
           </div>
+        )}
+
+        {/* Chat Interface */}
+        <div className="flex-1 max-w-4xl w-full mx-auto">
+          <ChatInterface
+            currentChatId={currentChatId}
+            onChatSaved={handleChatSaved}
+          />
         </div>
       </div>
 

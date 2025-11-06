@@ -4,6 +4,8 @@ import React from "react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Logo } from "@/components/ui/logo";
 import { useNavbarAuth } from "@/hooks/useNavbarAuth";
+import { useAuthStore } from "@/lib/stores/auth";
+import Link from "next/link";
 
 interface NavbarProps {
   variant?: "default" | "courses";
@@ -12,6 +14,8 @@ interface NavbarProps {
 
 export function Navbar({ variant = "default", className = "" }: NavbarProps) {
   const authButton = useNavbarAuth();
+  const { user, isAuthenticated, _hasHydrated } = useAuthStore();
+  const isAdmin = _hasHydrated && isAuthenticated && user?.role === "admin";
 
   return (
     <header className={`w-full ${className}`}>
@@ -19,13 +23,16 @@ export function Navbar({ variant = "default", className = "" }: NavbarProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Logo />
+            <Link href="/">
+              {" "}
+              <Logo />{" "}
+            </Link>
           </div>
 
           {/* Navigation and CTA Button */}
           <div className="flex items-center space-x-8">
             <nav className="hidden md:flex items-center space-x-8">
-              <a
+              {/* <Link
                 href="/"
                 className={`font-medium transition-colors ${
                   variant === "courses"
@@ -34,8 +41,8 @@ export function Navbar({ variant = "default", className = "" }: NavbarProps) {
                 }`}
               >
                 Home
-              </a>
-              <a
+              </Link> */}
+              <Link
                 href="/courses"
                 className={`font-medium transition-colors ${
                   variant === "courses"
@@ -44,17 +51,29 @@ export function Navbar({ variant = "default", className = "" }: NavbarProps) {
                 }`}
               >
                 Courses
-              </a>
-              <a
-                href="#blog"
+              </Link>
+              <Link
+                href="/aiChat"
                 className={`font-medium transition-colors ${
                   variant === "courses"
                     ? "text-gray-700 hover:text-gray-900"
                     : "text-gray-700 hover:text-gray-900"
                 }`}
               >
-                Blog
-              </a>
+                AI Chat
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className={`font-medium transition-colors ${
+                    variant === "courses"
+                      ? "text-gray-700 hover:text-gray-900"
+                      : "text-gray-700 hover:text-gray-900"
+                  }`}
+                >
+                  Dashboard
+                </Link>
+              )}
             </nav>
 
             {/* Dynamic Auth Button */}

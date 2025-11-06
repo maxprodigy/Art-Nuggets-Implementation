@@ -8,10 +8,18 @@ import { ChatSidebarContent } from "./ChatSidebarContent";
 
 interface ResponsiveChatSidebarProps {
   className?: string;
+  activeChatId?: string | null;
+  onChatSelect?: (chatId: string | null) => void;
+  onNewChat?: () => void;
+  refreshTrigger?: number;
 }
 
 export function ResponsiveChatSidebar({
   className,
+  activeChatId,
+  onChatSelect,
+  onNewChat,
+  refreshTrigger,
 }: ResponsiveChatSidebarProps) {
   const [open, setOpen] = useState(false);
 
@@ -30,7 +38,13 @@ export function ResponsiveChatSidebar({
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-80 p-0">
-            <ChatSidebarContent onClose={() => setOpen(false)} />
+            <ChatSidebarContent
+              onClose={() => setOpen(false)}
+              activeChatId={activeChatId}
+              onChatSelect={onChatSelect}
+              onNewChat={onNewChat}
+              refreshTrigger={refreshTrigger}
+            />
           </SheetContent>
         </Sheet>
       </div>
@@ -38,7 +52,12 @@ export function ResponsiveChatSidebar({
       {/* Desktop: Fixed Sidebar */}
       <div className="hidden md:block">
         <div className="w-80 h-full">
-          <ChatSidebarContent />
+          <ChatSidebarContent
+            activeChatId={activeChatId}
+            onChatSelect={onChatSelect}
+            onNewChat={onNewChat}
+            refreshTrigger={refreshTrigger}
+          />
         </div>
       </div>
     </>

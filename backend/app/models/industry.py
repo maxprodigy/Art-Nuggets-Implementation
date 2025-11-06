@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.niche import Niche
     from app.models.user import User
+    from app.models.course import Course
 
 
 class Industry(SQLModel, table=True):
@@ -23,7 +24,9 @@ class Industry(SQLModel, table=True):
             default=uuid.uuid4,
         )
     )
-    name: str = Field(sa_column=Column(pg.VARCHAR, nullable=False, unique=True, index=True))
+    name: str = Field(
+        sa_column=Column(pg.VARCHAR, nullable=False, unique=True, index=True)
+    )
     created_at: datetime = Field(
         sa_column=Column(pg.TIMESTAMP, nullable=False, default=datetime.now)
     )
@@ -39,3 +42,4 @@ class Industry(SQLModel, table=True):
     # Relationships
     niches: List["Niche"] = Relationship(back_populates="industry")
     users: List["User"] = Relationship(back_populates="industry")
+    courses: List["Course"] = Relationship(back_populates="industry")

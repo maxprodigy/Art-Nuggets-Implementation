@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
+    # Groq API
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "qwen/qwen3-32b"  # Qwen3 32B model on Groq
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

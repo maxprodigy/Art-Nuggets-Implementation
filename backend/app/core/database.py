@@ -1,19 +1,21 @@
 from sqlmodel import create_engine, text, SQLModel
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from app.core.config import settings as Config
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 
-async_engine = AsyncEngine(
-    create_engine(
-        url=Config.DATABASE_URL,
-        echo=True,
-        connect_args={
-            "prepared_statement_cache_size": 0,  # Disable prepared statements
-            "statement_cache_size": 0,
-        },
-    ),
+async_engine = create_async_engine(
+    url=Config.DATABASE_URL,
+    echo=True,
+    pool_size=10,
+    max_overflow=20,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    connect_args={
+        "prepared_statement_cache_size": 0,
+        "statement_cache_size": 0,
+    },
 )
 
 
@@ -23,7 +25,7 @@ async def init_db():
         await conn.run_sync(SQLModel.metadata.create_all)
 
 
-async def get_session() -> AsyncSession: # type: ignore
+async def get_session() -> AsyncSession:  # type: ignore
 
     Session = sessionmaker(
         bind=async_engine, class_=AsyncSession, expire_on_commit=False

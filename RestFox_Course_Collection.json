@@ -1,0 +1,335 @@
+{
+  "version": "1.0.0",
+  "name": "Art Nuggets - Course API",
+  "collections": [
+    {
+      "name": "Course Management",
+      "requests": [
+        {
+          "name": "1. Login Admin",
+          "method": "POST",
+          "url": "http://localhost:8000/api/v1/auth/login",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "data": {
+              "email": "admin@example.com",
+              "password": "your_password"
+            }
+          }
+        },
+        {
+          "name": "2. Login User",
+          "method": "POST",
+          "url": "http://localhost:8000/api/v1/auth/login",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "data": {
+              "email": "user@example.com",
+              "password": "your_password"
+            }
+          }
+        },
+        {
+          "name": "3. Get Industries",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/industries?limit=100"
+        },
+        {
+          "name": "4. Get Niches",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/niches?industry_id={industry_id}&limit=100"
+        }
+      ]
+    },
+    {
+      "name": "Admin Routes",
+      "requests": [
+        {
+          "name": "Create Course",
+          "method": "POST",
+          "url": "http://localhost:8000/api/v1/courses",
+          "headers": {
+            "Authorization": "Bearer {admin_token}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "data": {
+              "title": "Introduction to Digital Art Fundamentals",
+              "industry_id": "YOUR_INDUSTRY_UUID_HERE",
+              "niche_id": "YOUR_NICHE_UUID_HERE",
+              "video_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+              "summary": "Learn the foundational principles of digital art creation, including color theory, composition, and basic digital painting techniques.",
+              "source": "https://example.com/course-source",
+              "key_takeaways": [
+                {
+                  "content": "Understanding color theory is fundamental to creating visually appealing digital art"
+                },
+                {
+                  "content": "Practice daily sketching improves muscle memory and artistic fluency"
+                },
+                {
+                  "content": "Study master artists for inspiration and technique development"
+                }
+              ],
+              "additional_resources": [
+                {
+                  "title": "Digital Art Community Forum",
+                  "link": "https://example.com/community"
+                },
+                {
+                  "title": "Free Brushes Collection",
+                  "link": "https://example.com/brushes"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Course",
+          "method": "PUT",
+          "url": "http://localhost:8000/api/v1/courses/{course_id}",
+          "headers": {
+            "Authorization": "Bearer {admin_token}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "data": {
+              "title": "Advanced Digital Art Fundamentals",
+              "summary": "Updated summary with more advanced techniques"
+            }
+          }
+        },
+        {
+          "name": "Delete Course",
+          "method": "DELETE",
+          "url": "http://localhost:8000/api/v1/courses/{course_id}",
+          "headers": {
+            "Authorization": "Bearer {admin_token}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Routes",
+      "requests": [
+        {
+          "name": "Get All Courses",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/courses?page=1&page_size=10"
+        },
+        {
+          "name": "Search Courses",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/courses?search=digital&page=1"
+        },
+        {
+          "name": "Filter by Industry",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/courses?industry_id={industry_id}&page=1"
+        },
+        {
+          "name": "Filter by Niche",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/courses?niche_id={niche_id}&page=1"
+        },
+        {
+          "name": "Get Recent Courses",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/courses/recent?limit=5"
+        },
+        {
+          "name": "Get Course by ID",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/courses/{course_id}"
+        }
+      ]
+    },
+    {
+      "name": "User Routes",
+      "requests": [
+        {
+          "name": "Toggle Favourite",
+          "method": "POST",
+          "url": "http://localhost:8000/api/v1/courses/{course_id}/favourite",
+          "headers": {
+            "Authorization": "Bearer {user_token}"
+          }
+        },
+        {
+          "name": "Mark as Completed",
+          "method": "POST",
+          "url": "http://localhost:8000/api/v1/courses/{course_id}/complete",
+          "headers": {
+            "Authorization": "Bearer {user_token}"
+          }
+        },
+        {
+          "name": "Get My Favourites",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/courses/my/favourites?page=1&page_size=10",
+          "headers": {
+            "Authorization": "Bearer {user_token}"
+          }
+        },
+        {
+          "name": "Get My Completed",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/courses/my/completed?page=1&page_size=10",
+          "headers": {
+            "Authorization": "Bearer {user_token}"
+          }
+        },
+        {
+          "name": "Get Course Progress",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/courses/{course_id}/progress",
+          "headers": {
+            "Authorization": "Bearer {user_token}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Dashboard",
+      "requests": [
+        {
+          "name": "1. Login Admin (Required First)",
+          "method": "POST",
+          "url": "http://localhost:8000/api/v1/auth/login",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "data": {
+              "email": "admin@example.com",
+              "password": "your_admin_password"
+            }
+          },
+          "note": "Copy the access_token from response and use it in Authorization header for other admin endpoints"
+        },
+        {
+          "name": "2. Get Dashboard Overview",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/admin/stats/overview",
+          "headers": {
+            "Authorization": "Bearer {admin_token}"
+          },
+          "description": "Returns comprehensive dashboard statistics:\n- Total users, new users (month/week)\n- Total courses, industries, niches\n- Active users (30 days)\n- Total completions and favourites\n- Completion rate and average courses per user"
+        },
+        {
+          "name": "3. Get Course Analytics",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/admin/stats/courses?limit=10",
+          "headers": {
+            "Authorization": "Bearer {admin_token}"
+          },
+          "description": "Returns detailed course analytics:\n- Top courses by completions\n- Top courses by favourites\n- Courses breakdown by industry\n- Courses breakdown by niche\n- Recent course activity (last 7 days)\n\nQuery params:\n- limit: Number of top courses to return (1-50, default: 10)"
+        },
+        {
+          "name": "4. Get Course Analytics (Top 20)",
+          "method": "GET",
+          "url": "http://localhost:8000/api/v1/admin/stats/courses?limit=20",
+          "headers": {
+            "Authorization": "Bearer {admin_token}"
+          },
+          "description": "Get top 20 courses in analytics"
+        }
+      ]
+    },
+    {
+      "name": "Admin Content Management",
+      "requests": [
+        {
+          "name": "Create Industry",
+          "method": "POST",
+          "url": "http://localhost:8000/api/v1/industries",
+          "headers": {
+            "Authorization": "Bearer {admin_token}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "data": {
+              "name": "Digital Art"
+            }
+          }
+        },
+        {
+          "name": "Update Industry",
+          "method": "PUT",
+          "url": "http://localhost:8000/api/v1/industries/{industry_id}",
+          "headers": {
+            "Authorization": "Bearer {admin_token}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "data": {
+              "name": "Updated Industry Name"
+            }
+          }
+        },
+        {
+          "name": "Delete Industry",
+          "method": "DELETE",
+          "url": "http://localhost:8000/api/v1/industries/{industry_id}",
+          "headers": {
+            "Authorization": "Bearer {admin_token}"
+          },
+          "note": "Cannot delete if has associated niches or users"
+        },
+        {
+          "name": "Create Niche",
+          "method": "POST",
+          "url": "http://localhost:8000/api/v1/niches",
+          "headers": {
+            "Authorization": "Bearer {admin_token}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "data": {
+              "name": "Character Design",
+              "industry_id": "YOUR_INDUSTRY_UUID_HERE"
+            }
+          }
+        },
+        {
+          "name": "Update Niche",
+          "method": "PUT",
+          "url": "http://localhost:8000/api/v1/niches/{niche_id}",
+          "headers": {
+            "Authorization": "Bearer {admin_token}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "data": {
+              "name": "Updated Niche Name",
+              "industry_id": "YOUR_INDUSTRY_UUID_HERE"
+            }
+          }
+        },
+        {
+          "name": "Delete Niche",
+          "method": "DELETE",
+          "url": "http://localhost:8000/api/v1/niches/{niche_id}",
+          "headers": {
+            "Authorization": "Bearer {admin_token}"
+          },
+          "note": "Cannot delete if has associated users"
+        }
+      ]
+    }
+  ]
+}
+

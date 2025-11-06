@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.industry import Industry
     from app.models.user_niche import UserNiche
+    from app.models.course import Course
 
 
 class Niche(SQLModel, table=True):
@@ -44,3 +45,4 @@ class Niche(SQLModel, table=True):
     # Relationships
     industry: Optional["Industry"] = Relationship(back_populates="niches")
     user_niches: List["UserNiche"] = Relationship(back_populates="niche")
+    courses: List["Course"] = Relationship(back_populates="niche")
