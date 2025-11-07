@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useCourses } from "@/hooks/useCourses";
+import React, { useMemo, useState } from "react";
+import { useCourses, useCourse } from "@/hooks/useCourses";
 import {
   Table,
   TableBody,
@@ -21,20 +21,75 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CourseFormModal } from "@/components/admin/CourseFormModal";
+import { useIndustries, useNiches } from "@/hooks/useContent";
 
 export default function CoursesManagementPage() {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const pageSize = 10;
 
+  const [isCourseModalOpen, setCourseModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+
   const { data, isLoading, error } = useCourses({
     page,
     page_size: pageSize,
     search: searchTerm || undefined,
   });
+
+  const { data: industriesData } = useIndustries();
+  const { data: nichesData } = useNiches(0, 200);
+
+  const { data: selectedCourse } = useCourse(
+    modalMode === "edit" && isCourseModalOpen ? selectedCourseId : null
+  );
+
+  const industryNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    industriesData?.industries.forEach((industry) => {
+      map.set(industry.id, industry.name);
+    });
+    return map;
+  }, [industriesData]);
+
+  const nicheNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    nichesData?.niches.forEach((niche) => {
+      map.set(niche.id, niche.name);
+    });
+    return map;
+  }, [nichesData]);
+
+  const handleModalChange = (open: boolean) => {
+    setCourseModalOpen(open);
+    if (!open) {
+      setSelectedCourseId(null);
+      setModalMode("create");
+    }
+  };
+
+  const handleCreateClick = () => {
+    setModalMode("create");
+    setSelectedCourseId(null);
+    setCourseModalOpen(true);
+  };
+
+  const handleEditClick = (courseId: string) => {
+    setModalMode("edit");
+    setSelectedCourseId(courseId);
+    setCourseModalOpen(true);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,11 +125,9 @@ export default function CoursesManagementPage() {
             Manage all courses in the platform
           </p>
         </div>
-        <Button asChild>
-          <Link href="/admin/courses/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Course
-          </Link>
+        <Button onClick={handleCreateClick}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Course
         </Button>
       </div>
 
@@ -130,22 +183,46 @@ export default function CoursesManagementPage() {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">Industry ID</Badge>
+                        <Badge variant="outline">
+                          {industryNameById.get(course.industry_id) ||
+                            "Unknown"}
+                        </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">Niche ID</Badge>
+                        <Badge variant="secondary">
+                          {nicheNameById.get(course.niche_id) || "Unknown"}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {new Date(course.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/admin/courses/${course.id}`}>
-                              Edit
-                            </Link>
-                          </Button>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onSelect={(event) => {
+                                event.preventDefault();
+                                handleEditClick(course.id);
+                              }}
+                            >
+                              Edit course
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link
+                                href={`/courses/${course.id}`}
+                                target="_blank"
+                              >
+                                View public page
+                              </Link>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -224,6 +301,12 @@ export default function CoursesManagementPage() {
           )}
         </CardContent>
       </Card>
+      <CourseFormModal
+        open={isCourseModalOpen}
+        onOpenChange={handleModalChange}
+        mode={modalMode}
+        course={modalMode === "edit" ? selectedCourse : undefined}
+      />
     </div>
   );
 }

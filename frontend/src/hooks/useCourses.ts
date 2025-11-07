@@ -6,9 +6,16 @@ import {
   toggleFavourite,
   markCompleted,
   getCourseProgress,
+  createCourse,
+  updateCourse,
   type GetCoursesParams,
 } from "@/lib/api/courses";
-import type { CourseProgressResponse } from "@/types/courses";
+import type {
+  CourseDetailResponse,
+  CourseProgressResponse,
+} from "@/types/courses";
+import type { CoursePayload } from "@/lib/validations/course";
+import { toast } from "sonner";
 
 // Query keys for React Query
 export const courseKeys = {
@@ -111,5 +118,58 @@ export const useMarkCompleted = () => {
       });
     },
     retry: 1,
+  });
+};
+
+/**
+ * Hook to create a new course
+ */
+export const useCreateCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<CourseDetailResponse, any, CoursePayload>({
+    mutationFn: (payload) => createCourse(payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: courseKeys.all });
+      toast.success(`Course "${data.title}" created successfully`);
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to create course";
+      toast.error(message);
+    },
+  });
+};
+
+/**
+ * Hook to update an existing course
+ */
+export const useUpdateCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    CourseDetailResponse,
+    any,
+    { courseId: string; payload: CoursePayload }
+  >({
+    mutationFn: ({ courseId, payload }) => updateCourse(courseId, payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: courseKeys.all });
+      queryClient.invalidateQueries({
+        queryKey: courseKeys.detail(data.id),
+      });
+      toast.success(`Course "${data.title}" updated successfully`);
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update course";
+      toast.error(message);
+    },
   });
 };

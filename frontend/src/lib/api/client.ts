@@ -13,7 +13,7 @@ export const apiClient = axios.create({
 // Create axios instance for direct backend calls
 export const backendClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1",
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },

@@ -4,6 +4,7 @@ import type {
   CourseDetailResponse,
   PaginatedCourseResponse,
 } from "@/types/courses";
+import type { CoursePayload } from "@/lib/validations/course";
 
 export interface GetCoursesParams {
   page?: number;
@@ -90,5 +91,26 @@ export const getCourseProgress = async (
   completed_at: string | null;
 }> => {
   const response = await backendClient.get(`/courses/${courseId}/progress`);
+  return response.data;
+};
+
+/**
+ * Create a new course (Admin only)
+ */
+export const createCourse = async (
+  payload: CoursePayload
+): Promise<CourseDetailResponse> => {
+  const response = await backendClient.post("/courses", payload);
+  return response.data;
+};
+
+/**
+ * Update an existing course (Admin only)
+ */
+export const updateCourse = async (
+  courseId: string,
+  payload: CoursePayload
+): Promise<CourseDetailResponse> => {
+  const response = await backendClient.put(`/courses/${courseId}`, payload);
   return response.data;
 };
