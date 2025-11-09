@@ -12,6 +12,7 @@ export interface ContractAnalysisResponse {
   analysis: string;
   extracted_text?: string;
   timestamp: string;
+  chat_id?: string | null;
 }
 
 export interface ErrorResponse {

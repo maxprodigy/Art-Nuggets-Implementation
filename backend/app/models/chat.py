@@ -38,6 +38,9 @@ class Chat(SQLModel, table=True):
     contract_text: Optional[str] = Field(
         default=None, sa_column=Column(pg.TEXT, nullable=True)
     )  # Store the original contract text for follow-up questions
+    contract_excerpt: Optional[str] = Field(
+        default=None, sa_column=Column(pg.TEXT, nullable=True)
+    )
     created_at: datetime = Field(
         sa_column=Column(pg.TIMESTAMP, nullable=False, default=datetime.utcnow)
     )
@@ -54,7 +57,10 @@ class Chat(SQLModel, table=True):
     user: Optional["User"] = Relationship(back_populates="chats")
     messages: List["ChatMessage"] = Relationship(
         back_populates="chat",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+            "lazy": "selectin",
+        },
     )
 
 
@@ -91,4 +97,7 @@ class ChatMessage(SQLModel, table=True):
     )
 
     # Relationships
-    chat: Optional["Chat"] = Relationship(back_populates="messages")
+    chat: Optional["Chat"] = Relationship(
+        back_populates="messages",
+        sa_relationship_kwargs={"lazy": "selectin"},
+    )

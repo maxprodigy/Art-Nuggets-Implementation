@@ -36,7 +36,7 @@ class ChatService:
             session.add(message)
 
         await session.commit()
-        await session.refresh(chat)
+        await session.refresh(chat, ["messages"])
         return chat
 
     async def get_user_chats(

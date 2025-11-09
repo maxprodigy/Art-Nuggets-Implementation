@@ -150,6 +150,8 @@ async def analyze_contract(
     # Save to chat if requested
     user_id = uuid.UUID(token_details["user"]["user_uid"])
 
+    result_chat_id: Optional[uuid.UUID] = None
+
     if save_to_chat:
         # Create a new chat
         chat_title = file.filename if file else "Contract Analysis"
@@ -172,7 +174,8 @@ async def analyze_contract(
             ],
             contract_text=extracted_text or contract_text,  # Store contract text
         )
-        await chat_service.create_chat(user_id, chat_data, session)
+        created_chat = await chat_service.create_chat(user_id, chat_data, session)
+        result_chat_id = created_chat.id
 
     elif chat_id:
         # Add messages to existing chat
@@ -210,10 +213,12 @@ async def analyze_contract(
             ),
             session,
         )
+        result_chat_id = chat_id
 
     return ContractAnalysisResponse(
         analysis=formatted_analysis,
         extracted_text=extracted_text,
+        chat_id=result_chat_id,
     )
 
 

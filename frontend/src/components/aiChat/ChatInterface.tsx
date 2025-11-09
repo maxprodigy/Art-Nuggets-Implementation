@@ -38,6 +38,7 @@ export function ChatInterface({
   const [showReasoning, setShowReasoning] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [hasContract, setHasContract] = useState(false);
+  const [localChatId, setLocalChatId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load chat when currentChatId changes
@@ -47,6 +48,7 @@ export function ChatInterface({
         // Clear messages for new chat
         setMessages([]);
         setHasContract(false);
+        setLocalChatId(null);
         return;
       }
 
@@ -56,6 +58,7 @@ export function ChatInterface({
         const chat: Chat = await aiChatApi.getChat(currentChatId);
         // Check if chat has contract text stored
         setHasContract(!!chat.contract_text);
+        setLocalChatId(currentChatId);
 
         // Convert chat messages to Message format
         const loadedMessages: Message[] = chat.messages.map((msg) => ({
@@ -150,14 +153,14 @@ export function ChatInterface({
 
     try {
       // Determine if we should save to chat
-      const shouldSaveToChat = !currentChatId; // Save to new chat if no current chat
-      const chatIdToUse = currentChatId || undefined;
+      const activeChatId = localChatId || currentChatId || undefined;
+      const shouldSaveToChat = !activeChatId; // Save to new chat if no chat ID yet
 
       const response: ContractAnalysisResponse =
         await aiChatApi.analyzeContract({
           file: selectedFile || undefined,
           user_text: inputText.trim() || undefined,
-          chat_id: chatIdToUse,
+          chat_id: activeChatId,
           save_to_chat: shouldSaveToChat,
         });
 
@@ -174,13 +177,18 @@ export function ChatInterface({
       };
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // If we saved to a new chat, reload chats to get the new chat ID
-      // Note: The backend saves the chat but doesn't return the ID in the response
-      // So we'll trigger a refresh and the user can see the new chat in the sidebar
-      if (shouldSaveToChat && onChatSaved) {
-        // Trigger refresh - the parent will reload the chat list
-        // We can't get the chat ID from the response, so we'll just trigger refresh
-        onChatSaved(""); // Empty string to trigger refresh
+      const resultantChatId = response.chat_id || activeChatId || null;
+
+      if (response.extracted_text || selectedFile || resultantChatId) {
+        setHasContract(true);
+      }
+
+      if (resultantChatId) {
+        setLocalChatId(resultantChatId);
+      }
+
+      if (shouldSaveToChat && resultantChatId && onChatSaved) {
+        onChatSaved(resultantChatId);
       }
 
       // Reset form

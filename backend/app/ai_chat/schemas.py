@@ -20,6 +20,9 @@ class ContractAnalysisResponse(BaseModel):
         None, description="Extracted text from the PDF if provided"
     )
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    chat_id: Optional[uuid.UUID] = Field(
+        default=None, description="Associated chat ID if the conversation was saved"
+    )
 
 
 class ErrorResponse(BaseModel):

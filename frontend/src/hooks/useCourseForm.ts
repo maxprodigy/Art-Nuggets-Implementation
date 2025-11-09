@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useForm, type UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
@@ -18,7 +18,7 @@ interface UseCourseFormOptions {
 
 export const useCourseForm = ({
   course,
-}: UseCourseFormOptions = {}): UseFormReturn<CourseFormValues> => {
+}: UseCourseFormOptions = {}) => {
   const defaultValues = useMemo<CourseFormValues>(
     () =>
       course
@@ -43,5 +43,3 @@ export const useCourseForm = ({
 };
 
 export type UseCourseFormReturn = ReturnType<typeof useCourseForm>;
-
-

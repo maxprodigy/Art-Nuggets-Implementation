@@ -29,6 +29,35 @@ class ContractAnalyzerService:
             r"\b(dispute|arbitration|jurisdiction|governing law)\b",
         ]
 
+        self.KEYWORD_SYNONYMS = {
+            "payment": {"compensation", "fee", "payout", "remuneration"},
+            "compensation": {"payment", "fee", "payout"},
+            "fee": {"fees", "payment"},
+            "royalty": {"royalties"},
+            "salary": {"wage", "pay"},
+            "intellectual": {"ip", "copyright"},
+            "property": {"ownership"},
+            "license": {"licence", "licensing"},
+            "rights": {"usage", "use", "right"},
+            "termination": {
+                "terminate",
+                "terminating",
+                "cancellation",
+                "cancel",
+                "ending",
+            },
+            "notice": {"notification", "advance notice"},
+            "liability": {"responsibility", "indemnity", "indemnification"},
+            "indemnification": {"indemnity", "hold harmless"},
+            "warranty": {"guarantee"},
+            "confidentiality": {"nda", "non-disclosure", "secrecy"},
+            "deliverable": {"deliverables", "deliveries", "work product"},
+            "scope": {"services", "obligations", "responsibilities"},
+            "duration": {"term", "length", "period"},
+            "dispute": {"arbitration", "jurisdiction", "litigation"},
+            "governing": {"jurisdiction", "law"},
+        }
+
     def extract_text_from_pdf(self, file: UploadFile) -> str:
         """Extract text content from a PDF file"""
         try:
@@ -158,6 +187,100 @@ class ContractAnalyzerService:
         relevant_sentences.sort(key=lambda x: x[0])
         return " ".join(sent for _, sent in relevant_sentences)
 
+    def _extract_relevant_sections(
+        self, text: str, user_text: Optional[str], max_chars: Optional[int] = None
+    ) -> tuple[Optional[str], bool]:
+        """Extract contract sections that relate to the user's specific question."""
+
+        if not user_text:
+            return None, False
+
+        if max_chars is None:
+            max_chars = self.MAX_CONTRACT_CHARS
+
+        # Build keyword set from user text (words >= 3 characters)
+        raw_words = re.findall(r"[A-Za-z0-9]{3,}", user_text)
+        keywords = {
+            word.lower()
+            for word in raw_words
+            if word.lower()
+            not in {"please", "that", "about", "would", "could", "there", "which"}
+        }
+
+        # Add simple bigrams/trigrams for better phrase matching
+        lowered_words = [w.lower() for w in raw_words]
+        for n in (2, 3):
+            for i in range(len(lowered_words) - n + 1):
+                phrase = " ".join(lowered_words[i : i + n])
+                if len(phrase.replace(" ", "")) >= 6:
+                    keywords.add(phrase)
+
+        # Include digit-based terms (e.g., notice periods like "30")
+        number_terms = re.findall(r"\b\d+\b", user_text)
+        for num in number_terms:
+            keywords.add(num)
+
+        # Morphological variants and synonyms
+        expanded_keywords = set(keywords)
+        for kw in list(keywords):
+            if kw.endswith("ing") and len(kw) > 4:
+                expanded_keywords.add(kw[:-3])
+            if kw.endswith("ed") and len(kw) > 3:
+                expanded_keywords.add(kw[:-2])
+            if kw.endswith("s") and len(kw) > 3:
+                expanded_keywords.add(kw[:-1])
+            if kw in self.KEYWORD_SYNONYMS:
+                expanded_keywords.update(self.KEYWORD_SYNONYMS[kw])
+
+        keywords = expanded_keywords
+
+        if not keywords:
+            return None, False
+
+        paragraphs = re.split(r"\n{2,}", text)
+        scored_paragraphs: List[tuple[int, int, str]] = []
+
+        for idx, paragraph in enumerate(paragraphs):
+            clean_paragraph = paragraph.strip()
+            if len(clean_paragraph) < 40:
+                continue
+            lower_paragraph = clean_paragraph.lower()
+            score = 0
+            for kw in keywords:
+                if " " in kw:
+                    if kw in lower_paragraph:
+                        score += 2
+                elif re.search(rf"\b{re.escape(kw)}\b", lower_paragraph):
+                    score += 1
+            if score:
+                scored_paragraphs.append((score, idx, clean_paragraph))
+
+        if not scored_paragraphs:
+            return None, False
+
+        # Sort by score (descending) then position (ascending)
+        scored_paragraphs.sort(key=lambda x: (-x[0], x[1]))
+
+        selected: List[tuple[int, str]] = []
+        total_chars = 0
+
+        for score, idx, paragraph in scored_paragraphs:
+            paragraph_with_heading = f"[RELEVANT SECTION {idx + 1}]\n{paragraph}"
+            paragraph_length = len(paragraph_with_heading)
+            if total_chars + paragraph_length > max_chars:
+                continue
+            selected.append((idx, paragraph_with_heading))
+            total_chars += paragraph_length + 2
+            if total_chars >= max_chars:
+                break
+
+        if not selected:
+            return None, False
+
+        selected.sort(key=lambda x: x[0])
+        combined = "\n\n".join(paragraph for _, paragraph in selected)
+        return combined, True
+
     def extract_reasoning_and_clean_response(self, text: str) -> tuple[str, str]:
         """
         Extract reasoning tags and clean the main response.
@@ -244,141 +367,53 @@ class ContractAnalyzerService:
         """Build a few-shot prompt for contract analysis"""
 
         # System Prompt
-        system_prompt = """You are a contract analysis assistant specializing in creative industry agreements. Your role is to help creative professionals understand their contracts by identifying key terms, potential areas of concern, and important clauses that warrant attention.
+        system_prompt = """You are a contract analysis assistant specializing in creative industry agreements. Your role is to help creative professionals understand their contracts by highlighting important terms, explaining legal language in plain English, and pointing out areas that typically require careful attention.
 
 IMPORTANT FORMATTING REQUIREMENTS:
-- Use plain text only for the main response - NO markdown formatting (no **, ###, #, __, etc.)
+- Use plain text only for the main response - no Markdown formatting (no **, ###, #, __, etc.)
 - If you include reasoning, wrap it in <reasoning>...</reasoning> tags
-- Use simple bullet points with dashes (-) for lists
-- Use clear section headers in plain text (e.g., "Key Financial Terms:" not "### Key Financial Terms")
-- Write in a clean, readable format without special formatting characters
+- When listing items, simple dashes (-) are fine but don't feel obligated to use a fixed outline
+- Adapt your headings and structure to match the contract and the user's question instead of repeating the same template
+- Keep the language clear, neutral, and informative
 
 Core Principles:
-- Present factual observations about contract terms without making judgments about whether the contract is "good" or "bad"
-- Highlight clauses that commonly require careful consideration in creative contracts
-- Explain technical legal language in plain terms
-- Point out what's present AND what's notably absent
-- Frame findings as informational, not prescriptive
-- Always defer to legal professionals for specific advice
-
-Response Structure:
-- Key Financial Terms: Payment structure, rates, royalties, expenses
-- Intellectual Property Rights: Ownership, licensing, usage rights, attribution
-- Scope and Deliverables: What's expected and timelines
-- Notable Clauses: Termination, revisions, liability, confidentiality
-- Areas Requiring Attention: Clauses that creative professionals typically review carefully with legal counsel"""
+- Present factual observations without judging whether the contract is "good" or "bad"
+- Explain technical legal language in accessible terms
+- Note both what's present and what's conspicuously missing
+- Encourage professional legal review for specific advice
+- Tailor the analysis to the context provided by the user, highlighting only the sections that matter most for their question"""
 
         # Few-shot examples
         few_shot_examples = """
-Example 1: Photography Contract
-User: Can you review this photography contract? "The Client shall pay Photographer $2,000 upon completion. All photographs and negatives shall become the exclusive property of the Client. Photographer grants Client unlimited usage rights in perpetuity across all media."
-Assistant: Here's my analysis of this photography contract:
+Example 1 (Photography):
+User question: "Can you review this photography contract? 'The Client shall pay Photographer $2,000 upon completion...'"
+Assistant approach:
+- Points out the flat fee, timing, and missing details about overtime/expenses.
+- Highlights that the client takes full ownership with unlimited usage, and notes the absence of portfolio rights or attribution.
+- Wraps up by suggesting the photographer discuss IP transfer with legal counsel.
 
-Key Financial Terms:
-- Payment: $2,000 flat fee
-- Payment timing: Upon completion (no deposit or milestone payments mentioned)
-- No mention of expenses, overtime, or additional fees
+Example 2 (Writing):
+User question: "Clause says I must deliver 10 articles monthly at $100 each. It's work-for-hire and the client can request unlimited revisions."
+Assistant approach:
+- Flags the ongoing workload versus flat rate, and the lack of payment schedule or kill fee.
+- Explains what "work-for-hire" means for copyright and byline rights.
+- Calls out the unlimited revisions clause as undefined and worth clarifying with counsel.
 
-Intellectual Property Rights:
-- Ownership: Contract states all photographs and negatives transfer to Client as "exclusive property"
-- Usage rights: Unlimited usage across all media in perpetuity
-- No mention of photographer's right to use images in portfolio or for self-promotion
-- No attribution requirements specified
-
-Notable Absences:
-- No kill fee if project is cancelled
-- No provision for licensing tiers or usage limitations
-- No clause about photographer's portfolio rights
-- No limitation period for usage rights
-
-Areas Requiring Attention: The IP transfer and usage rights clauses are particularly significant in photography contracts. The phrase "exclusive property" combined with "unlimited usage rights in perpetuity" typically means you're transferring both copyright ownership and all future usage rights. Creative professionals often review these sections carefully with legal counsel to ensure they align with their business model and future needs.
-
-The absence of portfolio usage rights may also be worth noting, as photographers typically retain the ability to showcase their work.
-
-I recommend discussing these specific terms with a legal professional who can advise based on your specific situation and goals.
-
-Example 2: Freelance Writing Contract
-User: What do you think about this clause in my writing contract? "Writer agrees to deliver 10 articles per month at $100 per article. All work is considered work-for-hire. Client may request unlimited revisions until satisfied."
-Assistant: Here's my analysis of these contract terms:
-
-Key Financial Terms:
-- Rate: $100 per article
-- Volume: 10 articles per month ($1,000 monthly total)
-- No mention of payment schedule (net 30, net 60, upon delivery, etc.)
-- No mention of kill fees or payment for drafts if article is rejected
-
-Scope and Deliverables:
-- Deliverable: 10 articles monthly
-- Revision policy: "Unlimited revisions until satisfied" with no defined parameters
-- No specification of article length, complexity, or research requirements
-- No timeline defined for revision requests or completion
-
-Intellectual Property Rights:
-- Classification: "Work-for-hire" designation
-- This typically means the client owns all copyright from creation
-- No mention of attribution/byline rights
-- No mention of writer's ability to reuse research or republish work
-
-Notable Absences:
-- No definition of what constitutes "satisfaction" for revisions
-- No timeline limits on revision requests
-- No cap on number of revision rounds or scope of revisions
-- No specification of word count or research depth
-
-Areas Requiring Attention: The "unlimited revisions" clause is particularly notable as it doesn't define boundaries around scope, timeframe, or what constitutes a reasonable revision versus a complete rewrite. Creative professionals often find it helpful to discuss with legal counsel how such clauses might affect their time investment and effective hourly rate.
-
-The work-for-hire designation has specific legal implications for copyright ownership that writers typically review carefully based on their career goals and content strategy.
-
-Consider consulting with a legal professional about these specific terms and whether additional parameters would be appropriate for your situation.
-
-Example 3: Graphic Design Contract
-User: I have a design contract that says "Designer retains copyright but grants Client exclusive license for use in marketing materials for 2 years. After 2 years, license becomes non-exclusive. Designer may use work in portfolio with Client approval." Is this okay?
-Assistant: Here's my analysis of these intellectual property terms:
-
-Intellectual Property Rights:
-- Copyright ownership: Designer retains copyright (you maintain ownership)
-- License type: Exclusive license for 2 years, then converts to non-exclusive
-- Usage scope: Limited to "marketing materials" (specific use case defined)
-- Time limitation: 2-year exclusivity period with defined end point
-- Portfolio rights: Allowed with client approval requirement
-
-What This Structure Typically Means:
-- You retain ownership of the underlying copyright
-- Client has sole right to use in marketing for 2 years (exclusivity)
-- After 2 years, you could license to others while client continues using
-- "Marketing materials" as a defined scope (may want clarity on what this includes/excludes)
-- Portfolio use requires asking permission rather than being automatically granted
-
-Notable Aspects:
-- The time-limited exclusivity with reversion to non-exclusive is a licensing structure seen in creative contracts
-- "Marketing materials" may benefit from definition (does it include social media, packaging, billboards, digital ads, print, etc.?)
-- Portfolio approval requirement means you'd need to request permission each time
-- No mention of attribution/credit requirements
-
-Areas That Creative Professionals Often Discuss with Legal Counsel:
-- Whether "marketing materials" is defined broadly or narrowly enough for both parties' needs
-- The implications of portfolio use requiring ongoing approval versus automatic right
-- What happens if the client is acquired or the brand changes hands
-
-These IP terms represent one of many possible licensing structures. A legal professional can help you understand how this specific arrangement aligns with your business practices and long-term goals."""
+Example 3 (Design):
+User question: "Designer keeps copyright but gives the client an exclusive license for marketing for 2 years, then it becomes non-exclusive. Designer can use the work in their portfolio with approval."
+Assistant approach:
+- Explains the licensing structure, exclusivity window, and conversion to non-exclusive.
+- Notes the need to define "marketing materials" and the implications of requiring approval for portfolio use.
+- Encourages reviewing those points with legal counsel."""
 
         # Key Guidelines
         guidelines = """
-Key Guidelines for Responses:
-✅ Do:
-- Use neutral language: "This clause means..." "Typically in creative contracts..." "This is a common area that professionals review..."
-- Identify missing elements that are standard in creative contracts
-- Explain technical terms in accessible language
-- Point out ambiguities or areas lacking specificity
-- Suggest consulting legal professionals for interpretation
-
-❌ Don't:
-- Say "This is a bad/good contract" or "You should/shouldn't sign"
-- Use alarmist language: "This is a red flag!" "Run away from this!"
-- Make specific legal recommendations
-- Predict outcomes or guarantee interpretations
-- Compare to what they "deserve" or what's "fair"
-"""
+Key Guidelines:
+- Keep the tone steady and professional; adapt your structure to the user’s question.
+- You don’t need to cover every possible section—focus on the clauses that matter most based on the prompt.
+- When something important is missing, mention it as “not addressed in this excerpt” rather than guessing.
+- Encourage the user to consult legal counsel using varied, natural phrasing rather than repeating the same sentence.
+- Stay away from legal advice, moral judgments, or alarmist language."""
 
         truncation_note = ""
         if was_truncated:
@@ -405,7 +440,7 @@ USER'S ADDITIONAL QUESTIONS/CONTEXT:
 {user_text}
 """
 
-        prompt += "\n\nPlease provide a comprehensive analysis of this contract, following the format, structure, and guidelines shown in the examples above. Use neutral, informational language and always defer to legal professionals for specific advice. IMPORTANT: Use plain text only for the main response - no markdown formatting (no asterisks, hashes, or other markdown symbols). If you include reasoning, wrap it in <reasoning>...</reasoning> tags."
+        prompt += "\n\nPlease analyze the contract in a flexible, conversational way that still covers the critical issues for creative professionals. Use neutral language, adapt the structure to the content, and end with a reminder to consult legal counsel (phrased naturally). IMPORTANT: Use plain text only—no Markdown symbols. If you include reasoning, wrap it in <reasoning>...</reasoning> tags."
 
         return prompt
 
@@ -426,9 +461,27 @@ USER'S ADDITIONAL QUESTIONS/CONTEXT:
                 contract_text
             )
 
+            # If we have a user-specific question, try to pull the most relevant sections
+            relevant_sections, used_relevant = self._extract_relevant_sections(
+                contract_text, user_text
+            )
+
+            contract_context = extracted_text
+
+            if relevant_sections:
+                contract_context = (
+                    "[TARGETED EXTRACT BASED ON QUESTION]\n" + relevant_sections
+                )
+                if len(contract_context) < self.MAX_CONTRACT_CHARS * 0.8:
+                    remaining_chars = self.MAX_CONTRACT_CHARS - len(contract_context)
+                    supplemental = extracted_text[:remaining_chars]
+                    if supplemental:
+                        contract_context += "\n\n[ADDITIONAL CONTEXT]\n" + supplemental
+                was_truncated = was_truncated or used_relevant
+
             # Build the prompt
             prompt = self.build_few_shot_prompt(
-                extracted_text, user_text, was_truncated
+                contract_context, user_text, was_truncated
             )
 
             # Estimate token count (rough: 1 token ≈ 4 characters)
