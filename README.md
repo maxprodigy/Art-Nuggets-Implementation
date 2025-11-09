@@ -12,7 +12,7 @@ The frontend communicates with the backend API to deliver a seamless web experie
 
 | Resource | Link |
 |-----------|------|
-| Report | [here](https://github.com/maxprodigy/Art-Nuggets-Implementation/)) |
+| Report | [here](https://github.com/maxprodigy/Art-Nuggets-Implementation/) |
 | API Docs (Swagger UI) | [docs](http://127.0.0.1:8000/docs)|
 | Demo Video | [[here](https://drive.google.com/file/d/1Wa3h7BtVg0RDLVECJEWJRz0ynNIsbZOs/view?usp=sharing)] |
 
