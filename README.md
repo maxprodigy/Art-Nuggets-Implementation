@@ -12,7 +12,7 @@ The frontend communicates with the backend API to deliver a seamless web experie
 
 | Resource | Link |
 |-----------|------|
-| Live App | [Add deployment link here](#) |
+| Report | [here](https://github.com/maxprodigy/Art-Nuggets-Implementation/)) |
 | API Docs (Swagger UI) | [docs](http://127.0.0.1:8000/docs)|
 | Demo Video | [[here](https://drive.google.com/file/d/1Wa3h7BtVg0RDLVECJEWJRz0ynNIsbZOs/view?usp=sharing)] |
 
@@ -57,15 +57,15 @@ Before running the project, ensure you have the following installed:
    ```bash
    cd C:\Users\peter\Desktop\Art-Nuggets-Implementation\backend
    python -m venv venv
-```
+
 3. Activate the environment:
-
+```bash
 PowerShell:
-
 .\venv\Scripts\Activate.ps1
-
+```
 4. Install dependencies:
 
+```bash
 python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 
@@ -77,10 +77,10 @@ uvloop; sys_platform != "win32"
 Run the app:
 
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-bash```
+```
 
 ## Testing
 
 Run backend tests using:
-
+```bash
 pytest
