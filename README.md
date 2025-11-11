@@ -13,7 +13,7 @@ The frontend communicates with the backend API to deliver a seamless web experie
 | Resource | Link |
 |-----------|------|
 | Report | [here](https://github.com/maxprodigy/Art-Nuggets-Implementation/blob/main/Experimentation%2C%20Metrics%2C%20and%20Results.pdf) |
-| Demo Video | [[here](https://drive.google.com/file/d/1Wa3h7BtVg0RDLVECJEWJRz0ynNIsbZOs/view?usp=sharing)] |
+| Demo Video | [here](https://youtu.be/AD6irfvcrsQ) |
 
 ---
 
