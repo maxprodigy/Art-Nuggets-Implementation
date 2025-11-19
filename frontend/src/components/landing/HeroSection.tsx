@@ -31,9 +31,7 @@ export function HeroSection() {
 
           {/* Description */}
           <p className="text-lg sm:text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Lorem ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem ipsum has been the industry's standard dummy text
-            ever since the 1500s.
+            Learn the rules. Spot the risks. Own your creative future. 
           </p>
 
           {/* CTA Button */}

@@ -31,20 +31,20 @@ export function BenefitsSection({ variant = "first" }: BenefitsSectionProps) {
           <div className="grid grid-cols-1 gap-8 mb-12">
             <BenefitCard
               image="/benefits-img-1.png"
-              title="Contracts 101"
-              description="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
+              title="Instant Contract Clarity"
+              description="Art Nuggets breaks down complex legal language into the simplest form so you can finally understand what you're signing. No more hidden risks or confusing clauses."
             />
 
             <BenefitCard
               image="/benefits-img-2.png"
-              title="Contracts 101"
-              description="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
+              title="Personalized Learning for Creatives"
+              description="We offer resources and courses tailored  to your creative goals and experience level. You'll only see contract that matters to you to help you grow faster and make smarter career moves."
             />
 
             <BenefitCard
               image="/benefits-img-3.png"
-              title="Contracts 101"
-              description="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."
+              title="Built for the Real World"
+              description="We serve African creatives. Whether you're just starting out or closing big deals, you get reliable support wherever your journey takes you."
             />
           </div>
 
@@ -83,19 +83,18 @@ export function BenefitsSection({ variant = "first" }: BenefitsSectionProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                title: "Contracts 101",
-                description:
-                  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
+                title:"Instant Contract Clarity",
+                description: "Art Nuggets breaks down complex legal language into the simplest form so you can finally understand what you're signing. No more hidden risks or confusing clauses."
               },
               {
-                title: "Contracts 101",
+                title: "Personalized Learning for Creatives",
                 description:
-                  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
+                  "We offer resources and courses tailored  to your creative goals and experience level. You'll only see contract that matters to you to help you grow faster and make smarter career moves."
               },
               {
-                title: "Contracts 101",
+                title: "Built for the Real World",
                 description:
-                  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
+                  "We serve African creatives. Whether you're just starting out or closing big deals, you get reliable support wherever your journey takes you."
               },
             ].map((benefit, index) => (
               <div key={index} className="bg-white rounded-lg p-8 shadow-sm">

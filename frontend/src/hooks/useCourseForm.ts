@@ -16,9 +16,7 @@ interface UseCourseFormOptions {
   course?: CourseDetailResponse | null;
 }
 
-export const useCourseForm = ({
-  course,
-}: UseCourseFormOptions = {}) => {
+export const useCourseForm = ({ course }: UseCourseFormOptions = {}) => {
   const defaultValues = useMemo<CourseFormValues>(
     () =>
       course

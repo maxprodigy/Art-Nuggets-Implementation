@@ -11,7 +11,7 @@ export function WhoIsThisForSection() {
     { name: "Artists", color: "bg-green-500" },
     { name: "Freelancers", color: "bg-orange-500" },
     { name: "Entrepreneurs", color: "bg-indigo-500" },
-    { name: "ArtNuggets", color: "bg-gray-500" },
+    { name: "Creatives", color: "bg-gray-500" },
     {
       name: "For Everyone",
       color:
