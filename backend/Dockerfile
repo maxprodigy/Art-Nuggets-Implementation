@@ -14,12 +14,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements.txt .
+# Copy from backend/ if building from repo root, or . if building from backend/
+COPY backend/requirements.txt requirements.txt
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy application code from backend/
+COPY backend/ .
 
 EXPOSE 8000
 
