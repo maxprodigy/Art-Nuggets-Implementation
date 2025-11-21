@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CourseSearchHero } from "@/components/courses/CourseSearchHero";
 import { NewInSection } from "@/components/courses/NewInSection";
 import { CourseSearchResultsSection } from "@/components/courses/CourseSearchResultsSection";
 import { Footer } from "@/components/landing/Footer";
 
-export default function CoursesPage() {
+function CoursesContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState(
@@ -53,5 +53,19 @@ export default function CoursesPage() {
       <NewInSection />
       <Footer />
     </div>
+  );
+}
+
+export default function CoursesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-gray-600">Loading...</div>
+        </div>
+      }
+    >
+      <CoursesContent />
+    </Suspense>
   );
 }
