@@ -1,0 +1,6 @@
+# Files to ignore for uploaded contracts
+data/uploaded_contracts/
+*.txt
+*.pdf
+*.docx
+

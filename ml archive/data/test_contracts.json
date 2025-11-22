@@ -1,0 +1,45 @@
+{
+  "contracts": [
+    {
+      "id": "contract_1",
+      "type": "Record Deal",
+      "text": "This Record Deal Agreement is entered into between Music Label Records and Artist 'John Doe' on January 1, 2024. The term of this agreement shall be three (3) years from the effective date. Artist agrees to deliver two complete albums during the term, with first album due within 12 months. Artist must provide monthly progress updates on recording activities. Artist agrees to maintain exclusive recording relationship and shall not record with competing labels. Artist shall receive 12% of net sales revenue. Artist must perform at minimum 20 promotional shows per year. Either party may terminate with 60 days written notice. This agreement shall be governed by the laws of California.",
+      "ground_truth": {
+        "term": "3 years",
+        "delivery_obligation": "deliver two complete albums during term, first album within 12 months",
+        "reporting_obligation": "provide monthly progress updates",
+        "exclusivity": "exclusive recording relationship, cannot record with competing labels",
+        "royalty_rate": "12% of net sales revenue",
+        "performance_obligation": "minimum 20 promotional shows per year",
+        "termination": "either party can terminate with 60 days notice"
+      }
+    },
+    {
+      "id": "contract_2", 
+      "type": "Management Agreement",
+      "text": "Management Agreement between Artist Sarah Wilson and Talent Management Company effective February 1, 2024. The initial term is eighteen (18) months, automatically renewing for successive one-year periods unless terminated. Artist agrees to pay management fee of 15% of gross earnings. Artist must obtain management approval for all performance bookings and recording contracts. Artist shall not engage other management companies during the term. Management company will have first right of refusal for any major business opportunities. Artist must maintain insurance coverage for performances. This agreement may be terminated by either party with 30 days written notice. This agreement is governed by New York law.",
+      "ground_truth": {
+        "term": "18 months with automatic renewal",
+        "management_fee": "15% of gross earnings",
+        "approval_requirement": "must obtain management approval for all performance bookings and recording contracts",
+        "exclusivity": "cannot engage other management companies",
+        "first_right_refusal": "management company has first right of refusal for major business opportunities",
+        "insurance_requirement": "must maintain insurance coverage for performances",
+        "termination": "either party can terminate with 30 days notice"
+      }
+    },
+    {
+      "id": "contract_3",
+      "type": "Distribution Deal",
+      "text": "Distribution Agreement between Independent Artist Mike Brown and Digital Distributor Corp dated March 1, 2024. This agreement shall remain in effect for a period of twenty-four (24) months. Artist retains 70% of streaming revenue after distributor takes 30%. Artist must deliver music in specified format within 30 days before release date. Artist grants distributor exclusive digital distribution rights worldwide. Artist is responsible for all production costs and copyright clearances. Distributor may terminate agreement if artist fails to meet minimum sales threshold of 100,000 streams in first year. This agreement is governed by Texas law.",
+      "ground_truth": {
+        "term": "24 months",
+        "revenue_split": "artist retains 70%, distributor takes 30%",
+        "delivery_obligation": "deliver music in specified format within 30 days before release",
+        "rights_granted": "exclusive digital distribution rights worldwide",
+        "costs_responsibility": "artist responsible for production costs and copyright clearances",
+        "termination_threshold": "distributor may terminate if less than 100,000 streams in first year"
+      }
+    }
+  ]
+}

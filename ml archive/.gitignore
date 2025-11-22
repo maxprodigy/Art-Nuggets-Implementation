@@ -1,0 +1,9 @@
+venv/
+.venv/
+.env
+.env.example
+# Uploaded contracts (user data)
+data/uploaded_contracts/
+*.txt
+*.pdf
+*.docx
