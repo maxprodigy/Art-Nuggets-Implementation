@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Logo } from "@/components/ui/logo";
+import { Logo } from "@/components/landing/logo";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { ChatItem } from "./ChatItem";
 import { aiChatApi, Chat } from "@/lib/api/aiChat";
 import { Loader2, Trash2, Check } from "lucide-react";
+import Link from "next/link";
 
 interface ChatSidebarContentProps {
   onClose?: () => void;
@@ -139,7 +140,9 @@ export function ChatSidebarContent({
     >
       {/* Logo */}
       <div className="mb-8">
-        <Logo />
+        <Link href="/">
+          <Logo />
+        </Link>
       </div>
 
       {/* Start New Chat Button */}
