@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getCookie } from "@/lib/auth/cookies";
+// import { getCookie } from "@/lib/auth/cookies";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -30,9 +30,9 @@ export function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Check if user has tokens (backend will validate them)
-  const accessToken = getCookie(request, "access_token");
-  const refreshToken = getCookie(request, "refresh_token");
+  // Check if user has tokens using Next.js cookies API
+  const accessToken = request.cookies.get("access_token")?.value;
+  const refreshToken = request.cookies.get("refresh_token")?.value;
   const hasTokens = !!(accessToken && refreshToken);
 
   // Redirect to login if accessing protected route without tokens
