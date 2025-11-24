@@ -1,5 +1,5 @@
 import React from "react";
-import { Logo } from "@/components/ui/logo";
+import { Logo } from "@/components/landing/logo";
 import { SignupForm } from "@/components/auth/SignupForm";
 
 export default function SignupPage() {

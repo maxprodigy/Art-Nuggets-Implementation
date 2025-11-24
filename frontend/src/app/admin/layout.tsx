@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth";
 import { AdminNavbar } from "@/components/admin/AdminNavbar";
-import { Navbar } from "@/components/ui/navbar";
+import { AdminBackBar } from "@/components/admin/AdminBackBar";
 
 export default function AdminLayout({
   children,
@@ -40,11 +40,14 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar variant="default" />
-      <AdminNavbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
+      <AdminBackBar />
+      {/* Spacing for fixed back bar */}
+      <div className="pt-20">
+        <AdminNavbar />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

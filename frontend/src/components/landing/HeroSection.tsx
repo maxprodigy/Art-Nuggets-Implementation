@@ -3,7 +3,7 @@
 import React from "react";
 import { GradientBackground } from "@/components/ui/gradient-background";
 import { Button } from "../ui/button";
-import { Navbar } from "@/components/ui/navbar";
+import { Navbar } from "@/components/landing/navbar";
 import { useAuthButton } from "@/hooks/useAuthButton";
 import { useRouter } from "next/navigation";
 
@@ -31,7 +31,7 @@ export function HeroSection() {
 
           {/* Description */}
           <p className="text-lg sm:text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Learn the rules. Spot the risks. Own your creative future. 
+            Learn the rules. Spot the risks. Own your creative future.
           </p>
 
           {/* CTA Button */}

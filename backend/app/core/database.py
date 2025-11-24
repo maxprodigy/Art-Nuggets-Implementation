@@ -8,13 +8,16 @@ from sqlalchemy.orm import sessionmaker
 async_engine = create_async_engine(
     url=Config.DATABASE_URL,
     echo=True,
-    pool_size=10,
-    max_overflow=20,
+    pool_size=2,
+    max_overflow=2,
     pool_pre_ping=True,
     pool_recycle=3600,
+    pool_timeout=30,
     connect_args={
         "prepared_statement_cache_size": 0,
         "statement_cache_size": 0,
+        # Add server settings for pooler
+        "server_settings": {"application_name": "art_nuggets_backend"},
     },
 )
 

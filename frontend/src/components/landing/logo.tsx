@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface LogoProps {
   className?: string;
@@ -8,7 +9,7 @@ interface LogoProps {
 
 export function Logo({ className = "", textColor = "text-gray-900" }: LogoProps) {
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={cn("flex items-center gap-3", className)}>
       {/* Art Nuggets Logo */}
       <Image
         src="/art-nuggets-logo.svg"
@@ -19,7 +20,7 @@ export function Logo({ className = "", textColor = "text-gray-900" }: LogoProps)
       />
 
       {/* Brand Name */}
-      <span className={`text-xl font-medium ${textColor ?? "text-gray-900"}`}>art nuggets</span>
+      <span className={cn("text-xl font-medium", textColor)}>art nuggets</span>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { GradientBackground } from "@/components/ui/gradient-background";
-import { Navbar } from "@/components/ui/navbar";
+import { Navbar } from "@/components/landing/navbar";
 import { Search, X } from "lucide-react";
 import { useIndustries } from "@/hooks/useOnboarding";
 

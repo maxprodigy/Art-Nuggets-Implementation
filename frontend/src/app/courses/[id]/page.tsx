@@ -11,7 +11,7 @@ import {
   BookOpen,
   ArrowLeft,
 } from "lucide-react";
-import { Navbar } from "@/components/ui/navbar";
+import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { YouTubeEmbed } from "@/components/courses/YouTubeEmbed";
@@ -179,7 +179,8 @@ export default function CourseDetailPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar variant="courses" />
 
-      <main className="py-8 sm:py-12">
+      {/* Spacing for fixed navbar */}
+      <main className="pt-24 sm:pt-28 py-8 sm:py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back button */}
           <Link href="/courses">

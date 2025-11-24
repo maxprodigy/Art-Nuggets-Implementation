@@ -3,7 +3,7 @@
 import React from "react";
 import { GradientBackground } from "@/components/ui/gradient-background";
 import { GradientButton } from "@/components/ui/gradient-button";
-import { Logo } from "@/components/ui/logo";
+import { Logo } from "@/components/landing/logo";
 import { useAuthButton } from "@/hooks/useAuthButton";
 import { useRouter } from "next/navigation";
 
