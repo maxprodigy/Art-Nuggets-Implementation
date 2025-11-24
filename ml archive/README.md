@@ -144,10 +144,6 @@ Update `config/api_config.py` to change models or add new ones.
 ### Adjust Prompts
 Modify prompts in `prompts/` directory to tailor analysis for specific contract types.
 
-## License
-
-MIT License
-
 ## Contributing
 
 Contributions welcome! Feel free to submit issues or pull requests.
